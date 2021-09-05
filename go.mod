@@ -1,4 +1,4 @@
-module github.com/meandredev/logger
+module github.com/meandrewdev/logger
 
 go 1.17
 
