@@ -37,6 +37,14 @@ func SetStdout(stdout bool) {
 	instance.SetStdout(stdout)
 }
 
+func SetEntryPrefix(prefix string) {
+	if !inited {
+		Init("", "", "")
+	}
+
+	instance.SetEntryPrefix(prefix)
+}
+
 func GetWriter(grade LogGrade) io.Writer {
 	if !inited {
 		Init("", "", "")
