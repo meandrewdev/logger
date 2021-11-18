@@ -12,21 +12,22 @@ import (
 )
 
 type Logger struct {
-	logpath   string
-	filename  string
-	file      *os.File
-	fileLog   *log.Logger
-	prefix    string
-	delimiter string
-	async     bool
-	stdout    bool
+	logpath     string
+	filename    string
+	file        *os.File
+	fileLog     *log.Logger
+	prefix      string
+	delimiter   string
+	async       bool
+	stdout      bool
+	entryPrefix string
 
-	sync.Mutex
+	*sync.Mutex
 }
 
 func NewLogger(path, prefix, delimiter string) *Logger {
 	if delimiter == "" {
-		delimiter = "\r\n\r\n------||------\r\n\r\n"
+		delimiter = "\n------||------\n"
 	}
 
 	if path == "" {
@@ -53,12 +54,21 @@ func NewLogger(path, prefix, delimiter string) *Logger {
 	return &l
 }
 
+func (l *Logger) Copy() *Logger {
+	copy := *l
+	return &copy
+}
+
 func (l *Logger) SetStdout(stdout bool) {
 	l.stdout = stdout
 }
 
 func (l *Logger) SetAsync(async bool) {
 	l.async = async
+}
+
+func (l *Logger) SetEntryPrefix(prefix string) {
+	l.entryPrefix = "[" + prefix + "] "
 }
 
 func (l *Logger) GetLogger() *log.Logger {
@@ -111,9 +121,11 @@ func (l *Logger) message(message string, grade LogGrade) {
 		l.updateFile()
 	}
 
-	l.fileLog.Printf("%s: %s%s", grade, message, l.delimiter)
+	msg := fmt.Sprintf("%s: %s%s%s", l.entryPrefix, grade, message, l.delimiter)
+
+	l.fileLog.Print(msg)
 	if l.stdout {
-		log.Printf("%s: %s", grade, message)
+		log.Print(msg)
 	}
 }
 
