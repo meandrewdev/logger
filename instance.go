@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/getsentry/sentry-go"
+	"github.com/ztrue/tracerr"
 )
 
 type FileLogger struct {
@@ -106,7 +107,23 @@ func (l *FileLogger) MessageF(message string, grade LogGrade, args ...interface{
 
 func (l *FileLogger) Error(err error) {
 	sentry.CaptureException(err)
-	l.MessageF("%s: %s\n%s", LG_Error, err, debug.Stack())
+
+	stack := ""
+	switch e := err.(type) {
+	case tracerr.Error:
+		stack = tracerr.Sprint(e)
+
+	default:
+		stack = string(debug.Stack())
+	}
+
+	l.MessageF("%s: %s\n%s", LG_Error, err, stack)
+}
+
+func (l *FileLogger) ErrorF(msg string, args ...interface{}) {
+	msg = fmt.Sprintf(msg, args...)
+	sentry.CaptureMessage(msg)
+	l.MessageF("%s: %s\n%s", LG_Error, msg)
 }
 
 func (l *FileLogger) Notice(message string) {

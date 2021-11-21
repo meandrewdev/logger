@@ -29,4 +29,5 @@ type Logger interface {
 	WarningF(format string, args ...interface{})
 
 	Error(err error)
+	ErrorF(msg string, args ...interface{})
 }

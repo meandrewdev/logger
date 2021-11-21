@@ -70,6 +70,12 @@ func Error(err error) {
 	instance.Error(err)
 }
 
+func ErrorF(msg string, args ...interface{}) {
+	Init("", "", "")
+
+	instance.ErrorF(msg, args...)
+}
+
 func Notice(message string) {
 	Init("", "", "")
 
