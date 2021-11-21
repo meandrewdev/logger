@@ -11,7 +11,7 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-type Logger struct {
+type FileLogger struct {
 	logpath     string
 	filename    string
 	file        *os.File
@@ -25,7 +25,7 @@ type Logger struct {
 	*sync.Mutex
 }
 
-func NewLogger(path, prefix, delimiter string) *Logger {
+func NewLogger(path, prefix, delimiter string) *FileLogger {
 	if delimiter == "" {
 		delimiter = "\n------||------\n"
 	}
@@ -38,7 +38,7 @@ func NewLogger(path, prefix, delimiter string) *Logger {
 		os.Mkdir(path, 0755)
 	}
 
-	l := Logger{
+	l := FileLogger{
 		logpath:   path,
 		prefix:    prefix,
 		delimiter: delimiter,
@@ -47,39 +47,51 @@ func NewLogger(path, prefix, delimiter string) *Logger {
 	l.updateFile()
 
 	if instance != nil {
-		l.SetAsync(instance.async)
-		l.SetStdout(instance.stdout)
+		l.SetAsync(instance.IsAsync())
+		l.SetStdout(instance.IsStdout())
 	}
 
 	return &l
 }
 
-func (l *Logger) Copy() *Logger {
+func (l *FileLogger) Copy() Logger {
 	copy := *l
 	return &copy
 }
 
-func (l *Logger) SetStdout(stdout bool) {
+func (l *FileLogger) SetStdout(stdout bool) {
 	l.stdout = stdout
 }
 
-func (l *Logger) SetAsync(async bool) {
+func (l *FileLogger) IsStdout() bool {
+	return l.stdout
+}
+
+func (l *FileLogger) SetAsync(async bool) {
 	l.async = async
 }
 
-func (l *Logger) SetEntryPrefix(prefix string) {
+func (l *FileLogger) IsAsync() bool {
+	return l.async
+}
+
+func (l *FileLogger) SetEntryPrefix(prefix string) {
 	l.entryPrefix = "[" + prefix + "] "
 }
 
-func (l *Logger) GetLogger() *log.Logger {
+func (l *FileLogger) GetEntryPrefix() string {
+	return l.entryPrefix
+}
+
+func (l *FileLogger) GetLogger() *log.Logger {
 	return l.fileLog
 }
 
-func (l *Logger) GetWriter(grade LogGrade) io.Writer {
+func (l *FileLogger) GetWriter(grade LogGrade) io.Writer {
 	return NewLoggerWriter(l, grade)
 }
 
-func (l *Logger) Message(message string, grade LogGrade) {
+func (l *FileLogger) Message(message string, grade LogGrade) {
 	if l.async {
 		go l.message(message, grade)
 	} else {
@@ -87,33 +99,33 @@ func (l *Logger) Message(message string, grade LogGrade) {
 	}
 }
 
-func (l *Logger) MessageF(message string, grade LogGrade, args ...interface{}) {
+func (l *FileLogger) MessageF(message string, grade LogGrade, args ...interface{}) {
 	message = fmt.Sprintf(message, args...)
 	l.Message(message, grade)
 }
 
-func (l *Logger) Error(err error) {
+func (l *FileLogger) Error(err error) {
 	sentry.CaptureException(err)
 	l.MessageF("%s: %s\n%s", LG_Error, err, debug.Stack())
 }
 
-func (l *Logger) Notice(message string) {
+func (l *FileLogger) Notice(message string) {
 	l.Message(message, LG_Notice)
 }
 
-func (l *Logger) NoticeF(format string, args ...interface{}) {
+func (l *FileLogger) NoticeF(format string, args ...interface{}) {
 	l.MessageF(format, LG_Notice, args...)
 }
 
-func (l *Logger) Warning(message string) {
+func (l *FileLogger) Warning(message string) {
 	l.Message(message, LG_Warning)
 }
 
-func (l *Logger) WarningF(format string, args ...interface{}) {
+func (l *FileLogger) WarningF(format string, args ...interface{}) {
 	l.MessageF(format, LG_Warning, args...)
 }
 
-func (l *Logger) message(message string, grade LogGrade) {
+func (l *FileLogger) message(message string, grade LogGrade) {
 	l.Lock()
 	defer l.Unlock()
 
@@ -129,7 +141,7 @@ func (l *Logger) message(message string, grade LogGrade) {
 	}
 }
 
-func (l *Logger) updateFile() {
+func (l *FileLogger) updateFile() {
 	newName := getLogFilename(l.prefix)
 
 	if l.filename == newName {

@@ -1,11 +1,11 @@
 package logger
 
 type LoggerWriter struct {
-	l     *Logger
+	l     *FileLogger
 	grade LogGrade
 }
 
-func NewLoggerWriter(l *Logger, grade LogGrade) *LoggerWriter {
+func NewLoggerWriter(l *FileLogger, grade LogGrade) *LoggerWriter {
 	return &LoggerWriter{l, grade}
 }
 

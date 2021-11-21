@@ -5,105 +5,91 @@ import (
 	"time"
 )
 
-var instance *Logger
+var instance Logger
 var inited bool
 
 func Init(path, prefix, delimiter string) {
+	if inited {
+		return
+	}
+
 	instance = NewLogger(path, prefix, delimiter)
 	inited = true
 }
 
-func GetInstance() *Logger {
-	if !inited {
-		Init("", "", "")
-	}
+func Reinit(path, prefix, delimiter string) {
+	inited = false
+
+	Init(path, prefix, delimiter)
+}
+
+func GetInstance() Logger {
+	Init("", "", "")
 
 	return instance
 }
 
 func SetAsync(async bool) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.SetAsync(async)
 }
 
 func SetStdout(stdout bool) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.SetStdout(stdout)
 }
 
 func SetEntryPrefix(prefix string) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.SetEntryPrefix(prefix)
 }
 
 func GetWriter(grade LogGrade) io.Writer {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 	return instance.GetWriter(grade)
 }
 
 func Message(message string, grade LogGrade) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.Message(message, grade)
 }
 
 func MessageF(message string, grade LogGrade, args ...interface{}) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.MessageF(message, grade, args...)
 }
 
 func Error(err error) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.Error(err)
 }
 
 func Notice(message string) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.Notice(message)
 }
 
 func NoticeF(format string, args ...interface{}) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.NoticeF(format, args...)
 }
 
 func Warning(message string) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.Warning(message)
 }
 
 func WarningF(format string, args ...interface{}) {
-	if !inited {
-		Init("", "", "")
-	}
+	Init("", "", "")
 
 	instance.WarningF(format, args...)
 }
