@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime/debug"
 	"sync"
 
 	"github.com/getsentry/sentry-go"
@@ -108,22 +107,22 @@ func (l *FileLogger) MessageF(message string, grade LogGrade, args ...interface{
 func (l *FileLogger) Error(err error) {
 	sentry.CaptureException(err)
 
-	stack := ""
+	msg := err.Error()
+
 	switch e := err.(type) {
 	case tracerr.Error:
-		stack = tracerr.Sprint(e)
-
-	default:
-		stack = string(debug.Stack())
+		msg = fmt.Sprintf("%s\n%s", msg, tracerr.Sprint(e))
 	}
 
-	l.MessageF("%s: %s\n%s", LG_Error, err, stack)
+	l.Message(msg, LG_Error)
 }
 
 func (l *FileLogger) ErrorF(msg string, args ...interface{}) {
 	msg = fmt.Sprintf(msg, args...)
+
 	sentry.CaptureMessage(msg)
-	l.MessageF("%s: %s\n%s", LG_Error, msg)
+
+	l.Message(msg, LG_Error)
 }
 
 func (l *FileLogger) Notice(message string) {
