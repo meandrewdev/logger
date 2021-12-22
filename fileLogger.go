@@ -42,6 +42,7 @@ func NewLogger(path, prefix, delimiter string) *FileLogger {
 		logpath:   path,
 		prefix:    prefix,
 		delimiter: delimiter,
+		Mutex:     &sync.Mutex{},
 	}
 
 	l.updateFile()
